@@ -43,9 +43,17 @@ def main():
     corrupted = 0
     with zipfile.ZipFile(args.zip) as z:
         names = z.namelist()
-        if not any(("Training" in n.split("/") and "Testing" in n.split("/"))
-                   or n.split("/")[-2] in ("Training", "Testing")
-                   for n in names):
+        # A valid entry looks like [optional-prefix/]Training|Testing/<class>/<file>
+        def is_valid_entry(n):
+            parts = [p for p in n.split("/") if p]
+            if len(parts) < 3:
+                return False
+            split_dir = next(
+                (p for p in parts if p in ("Training", "Testing")), None)
+            return (split_dir is not None
+                    and parts[parts.index(split_dir) + 1] in CLASS_NAMES)
+
+        if not any(is_valid_entry(n) for n in names):
             sys.exit("ERROR: ZIP does not contain the expected Training/Testing layout")
         for info in z.infolist():
             if info.is_dir():
