@@ -5,3 +5,5 @@ venv/
 data/raw/
 .ipynb_checkpoints/
 .DS_Store
+# 148 MB - exceeds GitHub 100MB limit; retrain locally: python src/train.py --model custom
+models/custom.keras

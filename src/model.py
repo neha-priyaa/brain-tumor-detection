@@ -35,7 +35,10 @@ def build_efficientnet(dropout=0.2, freeze_base=True, lr=1e-3):
     base.trainable = not freeze_base
 
     inputs = tf.keras.Input(shape=(224, 224, 3))
-    x = base(inputs, training=False)
+    # Our pipeline rescales to [0,1]; EfficientNetB0 expects [0,255]
+    # (it applies its own rescaling/normalization internally).
+    x = tf.keras.layers.Rescaling(255.0)(inputs)
+    x = base(x, training=False)
     x = tf.keras.layers.GlobalAveragePooling2D()(x)
     x = tf.keras.layers.Dense(128, activation="relu")(x)
     x = tf.keras.layers.Dropout(dropout)(x)
